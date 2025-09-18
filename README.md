@@ -8,6 +8,7 @@
 - Tìm kiếm sinh viên theo mã
 - In danh sách sinh viên
 - In top 10 sinh viên điểm cao nhất
+- Sắp xếp danh sách sinh viên theo mã, tên, diểm trung bình
 
 ## Cấu trúc
 Dự án được xây dựng với các lớp chính sau:
@@ -15,4 +16,3 @@ Dự án được xây dựng với các lớp chính sau:
 - MonHoc: Lưu trữ thông tin môn học và điểm số
 - StudentRepo: Quản lý danh sách sinh viên
 - Qlsv.kt: Chứa logic chính và menu tương tác
-- Các enum và sealed class (LuaChon, ChinhSuaSv, KetQua) để quản lý các tùy chọn và kết quả
