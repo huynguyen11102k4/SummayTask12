@@ -1,10 +1,6 @@
-package data
+package extension
 
-sealed class KetQua {
-    data class ThanhCong(val giaTri: String) : KetQua()
-    data class ThatBai(val loiNhan: String) : KetQua()
-    object KhongXacDinh : KetQua()
-}
+import utils.KetQua
 
 fun KetQua.inRa() {
     when (this) {

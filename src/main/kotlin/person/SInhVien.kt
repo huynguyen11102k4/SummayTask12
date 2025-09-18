@@ -1,4 +1,4 @@
-package student
+package person
 
 import data.MonHoc
 

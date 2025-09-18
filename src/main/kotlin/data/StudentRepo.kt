@@ -1,22 +1,25 @@
 package data
 
-import student.SinhVien
+import person.SinhVien
 
 
 object StudentRepo {
-    private val dsSV = mutableSetOf<SinhVien>()
+    private val dsSV = mutableListOf<SinhVien>()
 
     fun themSV(sv: SinhVien) {
         dsSV.add(sv)
     }
+
     fun inDS() {
         for (sv in dsSV) {
             sv.xuatThongTin()
         }
     }
+
     fun timSV(ma: Int): SinhVien? {
         return dsSV.find { it.ma == ma }
     }
+
     fun xoaSV(ma: Int): Boolean {
         val sv = timSV(ma)
         return if (sv != null) {
@@ -27,7 +30,7 @@ object StudentRepo {
         }
     }
 
-    fun getAllSV(): Set<SinhVien> {
-        return dsSV.toSet()
+    fun getAllSV(): MutableList<SinhVien> {
+        return dsSV
     }
 }
