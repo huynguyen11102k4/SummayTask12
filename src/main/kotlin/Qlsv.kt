@@ -1,13 +1,13 @@
-import data.GiaoVienRepo
-import utils.KetQua
-import data.MonHoc
+import data.TeacherRepo
+import utils.Outcome
+import data.Subject
 import data.StudentRepo
 import extension.customSort
-import extension.inRa
+import extension.print
 import extension.top10
-import person.GiaoVien
-import person.SinhVien
-import utils.SapXep
+import person.Teacher
+import person.Student
+import utils.Sort
 
 fun main() {
     println("Quản lý sinh viên - Summary Task 12")
@@ -16,7 +16,7 @@ fun main() {
         "2. HIỂN THỊ DANH SÁCH",
         "3. TÌM KIẾM SINH VIÊN",
         "4. XÓA SINH VIÊN",
-        "5. TOP 10 SINH VIÊN XUẤT SẮC",
+        "5. TOP 10 SINH VIÊN XUẤC SẮC",
         "6. CHỈNH SỬA THÔNG TIN SINH VIÊN",
         "7. SẮP XẾP DANH SÁCH SINH VIÊN"
     ).joinToString("\n")
@@ -24,27 +24,27 @@ fun main() {
 
     while (true) {
         println("Nhập lựa chọn của bạn (1-7), nhập khác để thoát:")
-        val lc = readInt("")
-        val kq: KetQua = when (lc) {
-            1 -> themSV()
-            2 -> inThongTinSV()
-            3 -> timKiemSV()
-            4 -> xoaSV()
-            5 -> inTop10()
-            6 -> chinhSuaSV()
-            7 -> sapXepSV()
+        val choice = readInt("")
+        val result: Outcome = when (choice) {
+            1 -> addStudent()
+            2 -> printStudentInfo()
+            3 -> findStudent()
+            4 -> deleteStudent()
+            5 -> printTop10()
+            6 -> editStudent()
+            7 -> sortStudents()
             else -> {
                 println("Thoát chương trình - Cảm ơn bạn đã sử dụng chương trình!")
                 break
             }
         }
-        kq.inRa()
+        result.print()
     }
 }
 
-fun readInt(p: String): Int {
+fun readInt(msg: String): Int {
     while (true) {
-        println("Input: $p")
+        println("Input: $msg")
         val input = readLine()
         try {
             if (input != null && input.toIntOrNull() != null) {
@@ -57,206 +57,206 @@ fun readInt(p: String): Int {
     }
 }
 
-fun themSV(): KetQua {
+fun addStudent(): Outcome {
     println("Thêm sinh viên - Nhập thông tin sinh viên:")
     println("Bước 1: Nhập mã sinh viên (hoặc để trống để tự động tạo mã):")
-    val maSV = readLine()?.toInt() ?: SinhVien.getAutoId()
-    if (StudentRepo.timSV(maSV) != null) {
-        println("Lỗi: Mã sinh viên $maSV đã tồn tại")
-        return KetQua.ThatBai("Vui lòng nhập lại")
+    val studentId = readLine()?.toInt() ?: Student.getAutoId()
+    if (StudentRepo.findById(studentId) != null) {
+        println("Lỗi: Mã sinh viên $studentId đã tồn tại")
+        return Outcome.Failure("Vui lòng nhập lại")
     }
 
     println("Bước 2: Nhập tên sinh viên:")
-    val ten = readLine() ?: run {
+    val name = readLine() ?: run {
         println("Lỗi: Tên không được để trống")
-        return KetQua.ThatBai("Vui lòng nhập lại")
+        return Outcome.Failure("Vui lòng nhập lại")
     }
 
     println("Bước 3: Nhập tuổi sinh viên:")
-    val tuoi = readLine()?.toInt()
+    val age = readLine()?.toInt()
 
     println("Bước 4: Nhập số môn học:")
-    val soMonHoc = readLine()?.toInt() ?: 0
-    val dsMonHoc = mutableSetOf<MonHoc>()
-    repeat(soMonHoc) {
-        dsMonHoc.add(nhapThongTinMonHoc())
+    val numSubjects = readLine()?.toInt() ?: 0
+    val subjects = mutableSetOf<Subject>()
+    repeat(numSubjects) {
+        subjects.add(inputSubjectInfo())
     }
 
-    val sv = SinhVien(maSV, ten, tuoi, dsMonHoc)
-    StudentRepo.themSV(sv)
-    return KetQua.ThanhCong("Thêm sinh viên thành công")
+    val student = Student(studentId, name, age, subjects)
+    StudentRepo.addStudent(student)
+    return Outcome.Success("Thêm sinh viên thành công")
 }
 
-fun inThongTinSV(): KetQua {
-    StudentRepo.inDS()
-    return KetQua.ThanhCong("In danh sách sinh viên thành công")
+fun printStudentInfo(): Outcome {
+    StudentRepo.printAll()
+    return Outcome.Success("In danh sách sinh viên thành công")
 }
 
-fun timKiemSV(): KetQua {
-    val ma = readInt("Nhập mã sinh viên cần tìm:")
-    val sv = StudentRepo.timSV(ma)
-    return if (sv != null) {
-        sv.xuatThongTin()
-        KetQua.ThanhCong("Tìm thấy sinh viên có mã $ma")
+fun findStudent(): Outcome {
+    val id = readInt("Nhập mã sinh viên cần tìm:")
+    val student = StudentRepo.findById(id)
+    return if (student != null) {
+        student.printAll()
+        Outcome.Success("Tìm thấy sinh viên có mã $id")
     } else {
-        KetQua.ThatBai("Không tìm thấy sinh viên có mã $ma")
+        Outcome.Failure("Không tìm thấy sinh viên có mã $id")
     }
 }
 
-fun xoaSV(): KetQua {
-    val ma = readInt("Nhập mã sinh viên cần xóa:")
-    return if (StudentRepo.xoaSV(ma)) {
-        KetQua.ThanhCong("Xóa sinh viên thành công sinh viên có mã $ma")
+fun deleteStudent(): Outcome {
+    val id = readInt("Nhập mã sinh viên cần xóa:")
+    return if (StudentRepo.removeById(id)) {
+        Outcome.Success("Xóa sinh viên thành công sinh viên có mã $id")
     } else {
-        KetQua.ThatBai("Không tìm thấy sinh viên có mã $ma")
+        Outcome.Failure("Không tìm thấy sinh viên có mã $id")
     }
 }
 
-fun inTop10(): KetQua {
-    val dsSV = StudentRepo.getAllSV()
-    dsSV.top10().forEach { it.xuatThongTin() }
-    return KetQua.ThanhCong("Trên đây là top 10 sinh viên có điểm trung bình cao nhất")
+fun printTop10(): Outcome {
+    val students = StudentRepo.all()
+    students.top10().forEach { it.printAll() }
+    return Outcome.Success("Trên đây là top 10 sinh viên có điểm trung bình cao nhất")
 }
 
-fun luaChonSapXep(lc: Int, lc1: Boolean): KetQua {
-    return when (lc) {
+fun sortOption(choice: Int, ascending: Boolean): Outcome {
+    return when (choice) {
         1 -> {
-            SapXep.TheoMa(lc1).customSort()
-            KetQua.ThanhCong("Sắp xếp sinh viên theo mã thành công")
+            Sort.ById(ascending).customSort()
+            Outcome.Success("Sắp xếp sinh viên theo mã thành công")
         }
 
         2 -> {
-            SapXep.TheoTen(lc1).customSort()
-            KetQua.ThanhCong("Sắp xếp sinh viên theo tên thành công")
+            Sort.ByName(ascending).customSort()
+            Outcome.Success("Sắp xếp sinh viên theo tên thành công")
         }
 
         3 -> {
-            SapXep.TheoDiem(lc1).customSort()
-            KetQua.ThanhCong("Sắp xếp sinh viên theo điểm trung bình thành công")
+            Sort.ByScore(ascending).customSort()
+            Outcome.Success("Sắp xếp sinh viên theo điểm trung bình thành công")
         }
 
-        else -> KetQua.ThatBai("Lựa chọn không hợp lệ")
+        else -> Outcome.Failure("Lựa chọn không hợp lệ")
     }
 }
 
-fun sapXepSV(): KetQua {
+fun sortStudents(): Outcome {
     println("Sắp xếp sinh viên theo: 1. Mã   2. Tên     3. Điểm trung bình")
-    val lc = readInt("Nhập lựa chọn của bạn (1-3), nhập khác để thoát:")
-    if (lc < 1 || lc > 3) {
-        return KetQua.ThatBai("Lựa chọn không hợp lệ")
+    val choice = readInt("Nhập lựa chọn của bạn (1-3), nhập khác để thoát:")
+    if (choice < 1 || choice > 3) {
+        return Outcome.Failure("Lựa chọn không hợp lệ")
     }
     println("a. Tăng dần   b. Giảm dần")
-    val lc1 = readLine()
+    val order = readLine()
 
-    return if (lc1 != "a" && lc1 != "b") {
-        KetQua.ThatBai("Lựa chọn không hợp lệ")
-    } else if (lc1 == "a") {
-        luaChonSapXep(lc, true)
+    return if (order != "a" && order != "b") {
+        Outcome.Failure("Lựa chọn không hợp lệ")
+    } else if (order == "a") {
+        sortOption(choice, true)
     } else {
-        luaChonSapXep(lc, false)
+        sortOption(choice, false)
     }
 }
 
-fun nhapThongTinMonHoc(): MonHoc {
+fun inputSubjectInfo(): Subject {
     println("Nhập thông tin môn học")
     println("Mã môn học:")
-    val maMonHoc = readLine()
+    val subjectId = readLine()
     println("Tên môn học:")
-    val tenMonHoc = readLine()
+    val subjectName = readLine()
     println("Điểm môn học:")
-    val diemMonHoc = readLine()!!.toDouble()
+    val grade = readLine()!!.toDouble()
     println("Số tín chỉ:")
-    val soTinChi = readLine()!!.toInt()
+    val credits = readLine()!!.toInt()
     println("Nhập mã giảng viên phụ trách môn học (hoặc để trống để thêm mới):")
-    val maGV = readLine()?.toIntOrNull()
-    val giaoVien = maGV?.let { GiaoVienRepo.timGV(it) } ?: run {
+    val teacherId = readLine()?.toIntOrNull()
+    val teacher = teacherId?.let { TeacherRepo.findById(it) } ?: run {
         println("Thêm giảng viên mới - Nhập tên giảng viên:")
-        val tenGV = readLine() ?: run {
+        val teacherName = readLine() ?: run {
             println("Lỗi: Tên giảng viên không được để trống")
-            return nhapThongTinMonHoc()
+            return inputSubjectInfo()
         }
-        val tuoiGV = readLine()?.toIntOrNull()
-        val gv = GiaoVien(GiaoVien.getAutoId(), tenGV, tuoiGV)
-        GiaoVienRepo.themGV(gv)
-        gv
+        val teacherAge = readLine()?.toIntOrNull()
+        val newTeacher = Teacher(Teacher.getAutoId(), teacherName, teacherAge)
+        TeacherRepo.addTeacher(newTeacher)
+        newTeacher
     }
-    return MonHoc(maMonHoc, tenMonHoc.toString(), diemMonHoc, soTinChi, giaoVien)
+    return Subject(subjectId, subjectName.toString(), grade, credits, teacher)
 }
 
-fun themMonHoc(sv: SinhVien): KetQua {
+fun addSubject(student: Student): Outcome {
     println("Thêm môn học")
-    val mh = nhapThongTinMonHoc()
-    sv.dsMonHoc.add(mh)
-    mh.giaoVien?.dsMonHoc?.add(mh)
-    return KetQua.ThanhCong("Thêm môn học thành công")
+    val subject = inputSubjectInfo()
+    student.listSubjects.add(subject)
+    subject.teacher?.listSubjects?.add(subject)
+    return Outcome.Success("Thêm môn học thành công")
 }
 
-fun xoaMonHoc(sv: SinhVien): KetQua {
+fun deleteSubject(student: Student): Outcome {
     println("Xóa môn học - Nhập mã môn học cần xóa:")
-    val maMonHoc = readLine()
-    val mh = sv.dsMonHoc.find { it.ma == maMonHoc }
-    if (mh != null) {
-        sv.dsMonHoc.remove(mh)
-        mh.giaoVien?.dsMonHoc?.remove(mh)
-        return KetQua.ThanhCong("Xóa môn học thành công")
+    val subjectId = readLine()
+    val subject = student.listSubjects.find { it.id == subjectId }
+    if (subject != null) {
+        student.listSubjects.remove(subject)
+        subject.teacher?.listSubjects?.remove(subject)
+        return Outcome.Success("Xóa môn học thành công")
     } else {
-        return KetQua.ThatBai("Không tìm thấy môn học có mã $maMonHoc")
+        return Outcome.Failure("Không tìm thấy môn học có mã $subjectId")
     }
 }
 
-fun chinhSuaMonHoc(sv: SinhVien): KetQua {
+fun editSubject(student: Student): Outcome {
     println("Sửa môn học - Nhập mã môn học cần sửa:")
-    val maMonHoc = readLine()
-    val mh = sv.dsMonHoc.find { it.ma == maMonHoc }
-    if (mh == null) {
-        return KetQua.ThatBai("Không tìm thấy môn học có mã $maMonHoc")
+    val subjectId = readLine()
+    val subject = student.listSubjects.find { it.id == subjectId }
+    if (subject == null) {
+        return Outcome.Failure("Không tìm thấy môn học có mã $subjectId")
     }
 
     println("Sửa môn học - Nhập thông tin môn học:")
     println("Tên môn học:")
-    val tenMonHoc = readLine()
+    val subjectName = readLine()
     println("Điểm môn học:")
-    val diemMonHoc = readLine()?.toDouble()
+    val grade = readLine()?.toDouble()
     println("Số tín chỉ:")
-    val soTinChi = readLine()?.toInt()
+    val credits = readLine()?.toInt()
 
     println("Nhập mã giảng viên phụ trách (hoặc để trống nếu không thay đổi, nhập 0 để thêm mới):")
-    val maGV = readLine()?.toIntOrNull()
-    val giaoVien = when (maGV) {
-        null -> mh.giaoVien
+    val teacherId = readLine()?.toIntOrNull()
+    val teacher = when (teacherId) {
+        null -> subject.teacher
         0 -> {
             println("Thêm giảng viên mới - Nhập tên giảng viên:")
-            val tenGV = readLine() ?: run {
+            val teacherName = readLine() ?: run {
                 println("Lỗi: Tên giảng viên không được để trống")
-                return KetQua.ThatBai("Vui lòng nhập lại")
+                return Outcome.Failure("Vui lòng nhập lại")
             }
             println("Nhập tuổi giảng viên (hoặc để trống):")
-            val tuoiGV = readLine()?.toIntOrNull()
-            val gv = GiaoVien(GiaoVien.getAutoId(), tenGV, tuoiGV)
-            GiaoVienRepo.themGV(gv)
-            gv
+            val teacherAge = readLine()?.toIntOrNull()
+            val newTeacher = Teacher(Teacher.getAutoId(), teacherName, teacherAge)
+            TeacherRepo.addTeacher(newTeacher)
+            newTeacher
         }
 
         else -> {
-            GiaoVienRepo.timGV(maGV) ?: return KetQua.ThatBai("Không tìm thấy giảng viên có mã $maGV")
+            TeacherRepo.findById(teacherId) ?: return Outcome.Failure("Không tìm thấy giảng viên có mã $teacherId")
         }
     }
 
-    tenMonHoc?.let { mh.ten = it }
-    diemMonHoc?.let { mh.diem = it }
-    soTinChi?.let { mh.soTinChi = it }
-    giaoVien?.let {
-        mh.giaoVien?.dsMonHoc?.remove(mh)
-        mh.giaoVien = it
-        it.dsMonHoc.add(mh)
+    subjectName?.let { subject.name = it }
+    grade?.let { subject.grade = it }
+    credits?.let { subject.credits = it }
+    teacher?.let {
+        subject.teacher?.listSubjects?.remove(subject)
+        subject.teacher = it
+        it.listSubjects.add(subject)
     }
 
-    return KetQua.ThanhCong("Chỉnh sửa môn học thành công")
+    return Outcome.Success("Chỉnh sửa môn học thành công")
 }
 
-fun chinhSuaSV(): KetQua {
-    val ma = readInt("Nhập mã sinh viên cần chỉnh sửa:")
-    val sv = StudentRepo.timSV(ma) ?: return KetQua.ThatBai("Không tìm thấy sinh viên có mã $ma")
+fun editStudent(): Outcome {
+    val id = readInt("Nhập mã sinh viên cần chỉnh sửa:")
+    val student = StudentRepo.findById(id) ?: return Outcome.Failure("Không tìm thấy sinh viên có mã $id")
 
     println("Chỉnh sửa sinh viên - Lựa chọn thông tin cần chỉnh sửa:")
     val menu = listOf(
@@ -265,35 +265,35 @@ fun chinhSuaSV(): KetQua {
     println(menu)
 
     while (true) {
-        val lc = readInt("Nhập lựa chọn của bạn (1-5), nhập khác để thoát:")
-        val kq = when (lc) {
+        val choice = readInt("Nhập lựa chọn của bạn (1-5), nhập khác để thoát:")
+        val result = when (choice) {
             1 -> {
                 print("Nhập tên mới:")
-                val ten = readLine() ?: run {
+                val newName = readLine() ?: run {
                     println("Lỗi: Tên không được để trống")
-                    KetQua.ThatBai("Vui lòng nhập lại")
+                    Outcome.Failure("Vui lòng nhập lại")
                 }
-                sv.ten = ten.toString()
-                KetQua.ThanhCong("Chỉnh sửa tên thành công")
+                student.name = newName.toString()
+                Outcome.Success("Chỉnh sửa tên thành công")
             }
 
             2 -> {
                 print("Nhập tuổi mới:")
-                val tuoi = readLine()?.toInt()
-                sv.tuoi = tuoi
-                KetQua.ThanhCong("Chỉnh sửa tuổi thành công")
+                val newAge = readLine()?.toInt()
+                student.age = newAge
+                Outcome.Success("Chỉnh sửa tuổi thành công")
             }
 
-            3 -> themMonHoc(sv)
-            4 -> xoaMonHoc(sv)
-            5 -> chinhSuaMonHoc(sv)
+            3 -> addSubject(student)
+            4 -> deleteSubject(student)
+            5 -> editSubject(student)
             else -> {
                 println("Thoát chỉnh sửa sinh viên")
-                KetQua.KhongXacDinh
+                Outcome.Unknown
                 break
             }
         }
-        kq.inRa()
+        result.print()
     }
-    return KetQua.ThanhCong("Kết thúc chỉnh sửa sinh viên có mã $ma")
+    return Outcome.Success("Kết thúc chỉnh sửa sinh viên có mã $id")
 }

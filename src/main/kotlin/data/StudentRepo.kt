@@ -1,36 +1,36 @@
 package data
 
-import person.SinhVien
+import person.Student
 
 
 object StudentRepo {
-    private val dsSV = mutableListOf<SinhVien>()
+    private val students = mutableListOf<Student>()
 
-    fun themSV(sv: SinhVien) {
-        dsSV.add(sv)
+    fun addStudent(sv: Student) {
+        students.add(sv)
     }
 
-    fun inDS() {
-        for (sv in dsSV) {
-            sv.xuatThongTin()
+    fun printAll() {
+        for (sv in students) {
+            sv.printAll()
         }
     }
 
-    fun timSV(ma: Int): SinhVien? {
-        return dsSV.find { it.ma == ma }
+    fun findById(ma: Int): Student? {
+        return students.find { it.id == ma }
     }
 
-    fun xoaSV(ma: Int): Boolean {
-        val sv = timSV(ma)
+    fun removeById(ma: Int): Boolean {
+        val sv = findById(ma)
         return if (sv != null) {
-            dsSV.remove(sv)
+            students.remove(sv)
             true
         } else {
             false
         }
     }
 
-    fun getAllSV(): MutableList<SinhVien> {
-        return dsSV
+    fun all(): MutableList<Student> {
+        return students
     }
 }

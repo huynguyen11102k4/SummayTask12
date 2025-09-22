@@ -1,52 +1,52 @@
 package extension
 
 import data.StudentRepo
-import person.SinhVien
-import utils.SapXep
+import person.Student
+import utils.Sort
 
-fun SapXep.customSort() {
+fun Sort.customSort() {
     when (this) {
-        is SapXep.TheoMa -> {
-            if (tangDan) {
-                StudentRepo.getAllSV().sortedBy { it.ma }
+        is Sort.ById -> {
+            if (ascending) {
+                StudentRepo.all().sortedBy { it.id }
             } else {
-                StudentRepo.getAllSV().sortedBy { it.ma }.reversed()
+                StudentRepo.all().sortedBy { it.id }.reversed()
             }
         }
-        is SapXep.TheoTen -> {
-            if (tangDan) {
-                StudentRepo.getAllSV().sortedByNameRightToLeft(true)
+        is Sort.ByName -> {
+            if (ascending) {
+                StudentRepo.all().sortedByNameRightToLeft(true)
             } else{
-                StudentRepo.getAllSV().sortedByNameRightToLeft(false)
+                StudentRepo.all().sortedByNameRightToLeft(false)
             }
         }
-        is SapXep.TheoDiem -> {
-            if(tangDan) {
-                StudentRepo.getAllSV().sortedBy { it.tinhDiemTB() }
+        is Sort.ByScore -> {
+            if(ascending) {
+                StudentRepo.all().sortedBy { it.calculateAverageScore() }
             } else {
-                StudentRepo.getAllSV().sortedBy { it.tinhDiemTB() }.reversed()
+                StudentRepo.all().sortedBy { it.calculateAverageScore() }.reversed()
             }
         }
-        SapXep.KhongXacDinh -> {
+        Sort.Unspecified -> {
         }
     }
 }
 
-fun MutableList<SinhVien>.sortedByNameRightToLeft(tangDan: Boolean = true) {
-    val cmp = Comparator<SinhVien>{ a, b ->
-        val tenA = a.ten.trim().split(Regex("\\s+")).asReversed()
-        val tenB = b.ten.trim().split(Regex("\\s+")).asReversed()
+fun MutableList<Student>.sortedByNameRightToLeft(increase: Boolean = true) {
+    val cmp = Comparator<Student>{ a, b ->
+        val nameA = a.name.trim().split(Regex("\\s+")).asReversed()
+        val nameB = b.name.trim().split(Regex("\\s+")).asReversed()
 
-        val n = minOf(tenA.size, tenB.size)
+        val n = minOf(nameA.size, nameB.size)
         for (i in 0 until n) {
-            val res = tenA[i].compareTo(tenB[i], ignoreCase = true)
+            val res = nameA[i].compareTo(nameB[i], ignoreCase = true)
             if (res != 0) {
                 return@Comparator res
             }
         }
-        tenA.size.compareTo(tenB.size)
+        nameA.size.compareTo(nameB.size)
     }
-    return if (tangDan) {
+    return if (increase) {
         this.sortWith(cmp)
     } else {
         this.sortWith(cmp.reversed())

@@ -1,7 +1,7 @@
 package extension
 
-import person.SinhVien
+import person.Student
 
-fun List<SinhVien>.top10(): List<SinhVien> {
-    return this.sortedByDescending { it.tinhDiemTB() }.take(10)
+fun List<Student>.top10(): List<Student> {
+    return this.sortedByDescending { it.calculateAverageScore() }.take(10)
 }
