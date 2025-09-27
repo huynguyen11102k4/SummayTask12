@@ -1,5 +1,8 @@
 package person
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 abstract class People {
     abstract var id: Int
     abstract var name: String

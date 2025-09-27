@@ -1,0 +1,21 @@
+[
+    {
+        "id": 20225337,
+        "name": "Nguyen Van Quang Huy",
+        "age": 21,
+        "listEnrollments": [
+            {
+                "classId": "78111",
+                "grade": 9.0
+            },
+            {
+                "classId": "78331",
+                "grade": 8.0
+            },
+            {
+                "classId": "73623",
+                "grade": 9.0
+            }
+        ]
+    }
+]

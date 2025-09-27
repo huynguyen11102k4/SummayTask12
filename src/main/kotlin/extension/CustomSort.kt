@@ -1,33 +1,32 @@
 package extension
 
-import data.StudentRepo
+import repository.StudentRepo
 import person.Student
 import utils.Sort
 
-fun Sort.customSort() {
-    when (this) {
+fun Sort.customSort(repo: StudentRepo = StudentRepo()) : List<Student> {
+    return when (this) {
         is Sort.ById -> {
             if (ascending) {
-                StudentRepo.all().sortedBy { it.id }
+                repo.all().sortedBy { it.id }
             } else {
-                StudentRepo.all().sortedBy { it.id }.reversed()
+                repo.all().sortedBy { it.id }.reversed()
             }
         }
         is Sort.ByName -> {
-            if (ascending) {
-                StudentRepo.all().sortedByNameRightToLeft(true)
-            } else{
-                StudentRepo.all().sortedByNameRightToLeft(false)
-            }
+            val mutableList = repo.all().toMutableList()
+            mutableList.sortedByNameRightToLeft(ascending)
+            mutableList
         }
         is Sort.ByScore -> {
             if(ascending) {
-                StudentRepo.all().sortedBy { it.calculateAverageScore() }
+                repo.all().sortedBy { it.calculateAverageScore() }
             } else {
-                StudentRepo.all().sortedBy { it.calculateAverageScore() }.reversed()
+                repo.all().sortedBy { it.calculateAverageScore() }.reversed()
             }
         }
         Sort.Unspecified -> {
+            repo.all()
         }
     }
 }

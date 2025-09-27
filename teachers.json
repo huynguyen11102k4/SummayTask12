@@ -1,0 +1,26 @@
+[
+    {
+        "id": 2000,
+        "name": "Hoang",
+        "age": 33,
+        "listClassIds": [
+            "78111"
+        ]
+    },
+    {
+        "id": 2001,
+        "name": "Xuan",
+        "age": 43,
+        "listClassIds": [
+            "78331"
+        ]
+    },
+    {
+        "id": 2000,
+        "name": "Hoa",
+        "age": 43,
+        "listClassIds": [
+            "73623"
+        ]
+    }
+]

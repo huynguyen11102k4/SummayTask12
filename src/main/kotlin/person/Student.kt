@@ -1,33 +1,45 @@
 package person
 
-import data.Subject
+import data.Enrollment
+import kotlinx.serialization.Serializable
+import repository.Repos
+import java.lang.String.format
 
+@Serializable
 class Student(
     override var id: Int,
     override var name: String,
     override var age: Int? = null,
-    val listSubjects: MutableSet<Subject> = mutableSetOf()
+    val listEnrollments: MutableSet<Enrollment> = mutableSetOf()
 ) : People(id, name, age), AverageScore {
 
     constructor(ma: Int, ten: String) : this(ma, ten, null)
 
     override fun calculateAverageScore(): Double {
-        if (listSubjects.isEmpty()) {
-            return 0.0
+        if (listEnrollments.isEmpty()) return 0.0
+        var sumCredits = 0
+        var sum = 0.0
+        for (enroll in listEnrollments) {
+            val clazz = Repos.classRepo.findById(enroll.classId) ?: continue
+            val subject = Repos.subjectRepo.findById(clazz.subjectId) ?: continue
+            sumCredits += subject.credits
+            sum += enroll.grade * subject.credits
         }
-        val sumCredits = listSubjects.sumOf { it.credits }
-        val sum = listSubjects.sumOf { it.grade * it.credits }
-        return (sum / sumCredits).let { String.format("%.2f", it).toDouble() }
+        if (sumCredits == 0) return 0.0
+        return format("%.2f", sum / sumCredits).toDouble()
     }
 
     override fun printAll() {
         super.printAll()
-        if (listSubjects.isEmpty()) {
+        if (listEnrollments.isEmpty()) {
             println("Sinh viên $name - $id: Chưa có môn học")
         } else {
             println("Sinh viên $name - $id: Danh sách môn học:")
-            listSubjects.forEachIndexed { i, mh ->
-                println("Môn ${i + 1}: Tên: ${mh.name}, Điểm: ${mh.grade}, Số tín chỉ: ${mh.credits}")
+            listEnrollments.forEachIndexed { i, enroll ->
+                val clazz = Repos.classRepo.findById(enroll.classId) ?: return@forEachIndexed
+                val subject = Repos.subjectRepo.findById(clazz.subjectId) ?: return@forEachIndexed
+                val teacher = Repos.teacherRepo.findById(clazz.teacherId)
+                println("Môn ${i + 1}: Tên: ${subject.name}, Mã: ${subject.id}, Mã lớp: ${clazz.id}, Điểm: ${enroll.grade}, Số tín chỉ: ${subject.credits}, Giảng viên: ${teacher?.name ?: "Chưa có"}")
             }
         }
         println("Điểm trung bình: ${calculateAverageScore()}")

@@ -3,8 +3,8 @@ package data
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Subject(
+data class Class(
     var id: String,
-    var name: String,
-    var credits: Int
+    var subjectId: String,
+    var teacherId: Int
 )
